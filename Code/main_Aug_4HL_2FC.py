@@ -82,7 +82,7 @@ test_datagen = ImageDataGenerator(
 train_generator = train_datagen.flow_from_directory(
 	'../Dataset/train',  # this is the target directory
 	target_size=(320, 180),
-	batch_size=10,
+	batch_size=50,
 	shuffle = True,
 	class_mode='categorical')  
 
@@ -92,7 +92,7 @@ print "training data read"
 validation_generator = validation_datagen.flow_from_directory(
 	'../Dataset/validation',
 	target_size=(320, 180),
-	batch_size=10,
+	batch_size=50,
 	shuffle = True,
 	class_mode='categorical')
 
@@ -102,7 +102,7 @@ print "validation data read"
 test_generator = test_datagen.flow_from_directory(
 	'../Dataset/test',
 	target_size=(320, 180),
-	batch_size=10,
+	batch_size=50,
 	shuffle = True,
 	class_mode='categorical')
 
@@ -160,7 +160,7 @@ j=800 #nb_val_samples
 
 folder  = "Weights/Best/main/"
 ensure_dir(folder)
-filepath= folder + "1-4HL-2FC_weights.best.hdf5"
+filepath= folder + "2-4HL-2FC_weights.best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
@@ -192,28 +192,32 @@ folder  = "Images/main/"
 ensure_dir(folder)
 
 # summarize history for accuracy
+fig = plt.figure()
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "1-4HL-2FC_accuracy_val.png"
+fileName = "2-4HL-2FC_accuracy_val.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
+plt.close(fig)
 
 # summarize history for loss
+fig = plt.figure()
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "1-4HL-2FC_loss.png"
+fileName = "2-4HL-2FC_loss.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
+plt.close(fig)
 
 folder  = "Files/"
 ensure_dir(folder)
-with open(folder +"1-Output_4HL-2FC.txt", "wb") as text_file:
+with open(folder +"2-Output_4HL-2FC.txt", "wb") as text_file:
 	text_file.write("Using Opt=Nadam, lr =  %.8f, decay =  %.8f, reg =  %.2f\n  Validation Error: %.2f%%, Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" %(learn_r,dec,reg,100-vscores[1]*100,100-tscores[1]*100,j,i))
 
 
