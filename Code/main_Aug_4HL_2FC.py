@@ -13,6 +13,7 @@ from keras.regularizers import l2, activity_l2
 from keras.optimizers import Nadam
 from keras.layers.noise import GaussianNoise
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+from keras.utils.visualize_util import plot
 
 import csv
 import os
@@ -155,12 +156,16 @@ model = baseline_model()
 print "model built"
 print model.summary()
 
+folder  = "Images/Model/Aug/"
+ensure_dir(folder)
+plot(model, to_file='2-4HL-2FC_Aug_model.png')
+
 i=1000 #samples_per_epoch
 j=800 #nb_val_samples
 
-folder  = "Weights/Best/main/"
+folder  = "Weights/Best/Aug/"
 ensure_dir(folder)
-filepath= folder + "2-4HL-2FC_weights.best.hdf5"
+filepath= folder + "2-4HL-2FC_Aug_weights.best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
@@ -169,7 +174,7 @@ print 'fitting model'
 history = model.fit_generator(
 	train_generator,
 	samples_per_epoch=i,
-	nb_epoch=25,
+	nb_epoch=15,
 	validation_data=validation_generator,
 	nb_val_samples=j,
 	verbose = 2,
@@ -188,7 +193,7 @@ tscores = model.evaluate_generator(test_generator,
 print("Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" % (100-tscores[1]*100,j,i))
 
 
-folder  = "Images/main/"
+folder  = "Images/Aug/"
 ensure_dir(folder)
 
 # summarize history for accuracy
@@ -199,7 +204,7 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "2-4HL-2FC_accuracy_val.png"
+fileName = "2-4HL-2FC_Aug_accuracy_val.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
 plt.close(fig)
 
@@ -211,13 +216,13 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "2-4HL-2FC_loss.png"
+fileName = "2-4HL-2FC_Aug_loss.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
 plt.close(fig)
 
 folder  = "Files/"
 ensure_dir(folder)
-with open(folder +"2-Output_4HL-2FC.txt", "wb") as text_file:
+with open(folder +"2-Output_Aug_4HL-2FC.txt", "wb") as text_file:
 	text_file.write("Using Opt=Nadam, lr =  %.8f, decay =  %.8f, reg =  %.2f\n  Validation Error: %.2f%%, Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" %(learn_r,dec,reg,100-vscores[1]*100,100-tscores[1]*100,j,i))
 
 
