@@ -19,7 +19,7 @@ def output_label(out):
         return 'Right'
     elif out == 3:
         return 'Stop'
-    elif :
+    elif:
         return 'None'
     
 def baseline_model(weights_path=None):

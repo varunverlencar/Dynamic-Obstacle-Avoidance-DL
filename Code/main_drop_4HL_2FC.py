@@ -104,7 +104,7 @@ print "validation data read"
 test_generator = test_datagen.flow_from_directory(
 	'../Dataset/test',
 	target_size=(320, 180),
-	batch_size=20,
+	batch_size=15,
 	shuffle = True,
 	class_mode='categorical')
 
@@ -130,14 +130,12 @@ def baseline_model():
 	model.add(ZeroPadding2D((1, 1)))
 	model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_2'))
 	model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-	model.add(Dropout(0.3))
 
 	model.add(ZeroPadding2D((1, 1)))
 	model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_1'))
 	model.add(ZeroPadding2D((1, 1)))
 	model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_2'))
 	model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-	model.add(Dropout(0.3))
 
 	model.add(Flatten())
 	model.add(Dense(128	, activation='relu'))
@@ -170,7 +168,7 @@ j=800 #nb_val_samples
 
 folder  = "Weights/Best/main/"
 ensure_dir(folder)
-filepath= folder + "3-4HL-2FC_weights.best.hdf5"
+filepath= folder + "1-drop-4HL-2FC_weights.best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
@@ -179,7 +177,7 @@ print 'fitting model'
 history = model.fit_generator(
 	train_generator,
 	samples_per_epoch=i,
-	nb_epoch=16,
+	nb_epoch=20,
 	validation_data=validation_generator,
 	nb_val_samples=j,
 	verbose = 2,
@@ -209,7 +207,7 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "3-4HL-2FC_accuracy_val.png"
+fileName = "1-drop-4HL-2FC_accuracy_val.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
 plt.close(fig)
 
@@ -221,13 +219,13 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "3-4HL-2FC_loss.png"
+fileName = "1-drop-4HL-2FC_loss.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
 plt.close(fig)
 
 folder  = "Files/"
 ensure_dir(folder)
-with open(folder +"3-Output_4HL-2FC.txt", "wb") as text_file:
-	text_file.write("Batch 30 Using Opt=Nadam, lr =  %.8f, decay =  %.8f, reg =  %.8f\n  Validation Error: %.2f%%, Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" %(learn_r,dec,reg,100-vscores[1]*100,100-tscores[1]*100,j,i))
+with open(folder +"1-drop-Output_4HL-2FC.txt", "wb") as text_file:
+	text_file.write("drop Batch 30 Using Opt=Nadam, lr =  %.8f, decay =  %.8f, reg =  %.8f\n  Validation Error: %.2f%%, Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" %(learn_r,dec,reg,100-vscores[1]*100,100-tscores[1]*100,j,i))
 
 

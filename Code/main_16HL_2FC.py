@@ -13,8 +13,7 @@ from keras.regularizers import l2, activity_l2
 from keras.optimizers import Nadam
 from keras.layers.noise import GaussianNoise
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-# from IPython.display import SVG
-# from keras.utils.visualize_util import model_to_dot
+# from keras.utils.visualize_util import plot
 
 import csv
 import os
@@ -34,7 +33,7 @@ def ensure_dir(f):
 	if not os.path.exists(d):
 		os.makedirs(d)
 
-shift = 0.1
+shift = 0.12
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
 	rescale=1./255,
@@ -49,6 +48,7 @@ train_datagen = ImageDataGenerator(
 	# height_shift_range=shift,  # randomly shift images vertically (fraction of total height)
 	# horizontal_flip=True,  # randomly flip images
 	# vertical_flip=True,
+	# channel_shift_range = True,
 	# fill_mode='nearest'
 	)
 
@@ -66,6 +66,7 @@ validation_datagen = ImageDataGenerator(
 	# height_shift_range=shift,  # randomly shift images vertically (fractio
 	# horizontal_flip=True,  # randomly flip images
 	# vertical_flip=True,
+	# channel_shift_range = True,
 	# fill_mode='nearest'
 	)
 	
@@ -83,8 +84,8 @@ test_datagen = ImageDataGenerator(
 
 train_generator = train_datagen.flow_from_directory(
 	'../Dataset/train',  # this is the target directory
-	target_size=(320, 180),
-	batch_size=20,
+	target_size=(320,180),
+	batch_size=15,
 	shuffle = True,
 	class_mode='categorical')  
 
@@ -93,8 +94,8 @@ print "training data read"
 # this is a similar generator, for validation data
 validation_generator = validation_datagen.flow_from_directory(
 	'../Dataset/validation',
-	target_size=(320, 180),
-	batch_size=20,
+	target_size=(320,180),
+	batch_size=15,
 	shuffle = True,
 	class_mode='categorical')
 
@@ -103,16 +104,16 @@ print "validation data read"
 # this is a similar generator, for validation data
 test_generator = test_datagen.flow_from_directory(
 	'../Dataset/test',
-	target_size=(320, 180),
-	batch_size=20,
+	target_size=(320,180),
+	batch_size=15,
 	shuffle = True,
 	class_mode='categorical')
 
 print "test data read"
 
 learn_r= 0.0001
-dec = 0.0000005
-reg = 0.0001
+dec = 0.000000000001
+reg = 0.000000001
 #     learn_r= 0.0005
 # dec = 0.00000000001
 # reg = 0.00000000001
@@ -130,21 +131,44 @@ def baseline_model():
 	model.add(ZeroPadding2D((1, 1)))
 	model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_2'))
 	model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-	model.add(Dropout(0.3))
 
 	model.add(ZeroPadding2D((1, 1)))
 	model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_1'))
 	model.add(ZeroPadding2D((1, 1)))
 	model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_2'))
 	model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-	model.add(Dropout(0.3))
+
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(256, 3, 3, activation='relu'))
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(256, 3, 3, activation='relu'))
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(256, 3, 3, activation='relu'))
+	model.add(MaxPooling2D((2,2), strides=(2,2)))
+
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(512, 3, 3, activation='relu'))
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(512, 3, 3, activation='relu'))
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(512, 3, 3, activation='relu'))
+	model.add(MaxPooling2D((2,2), strides=(2,2)))
+
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(512, 3, 3, activation='relu'))
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(512, 3, 3, activation='relu'))
+	model.add(ZeroPadding2D((1,1)))
+	model.add(Convolution2D(512, 3, 3, activation='relu'))
+	model.add(MaxPooling2D((2,2), strides=(2,2)))
 
 	model.add(Flatten())
-	model.add(Dense(128	, activation='relu'))
+	model.add(Dense(1024, activation='relu'))
 	model.add(Dropout(0.3))
-	model.add(Dense(128	, activation='relu'))
+	model.add(Dense(1024, activation='relu'))
 	model.add(Dropout(0.3))
 	model.add(Dense(4, activation='softmax'))
+
 
 	# opt = Adam(lr=learn_r, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=dec)
 	opt = Nadam(lr=learn_r, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=dec)
@@ -157,20 +181,16 @@ model = baseline_model()
 print "model built"
 print model.summary()
 
-# SVG(model_to_dot(model).create(prog='dot', format='svg'))
-
 # folder  = "Images/Model/"
 # ensure_dir(folder)
-# graph = to_graph(model, show_shape=True)
-# graph.write_png('1-4HL-2FCmodel.png')
-# plot(model, to_file='1-4HL-2FCmodel.png')
+# plot(model, to_file='1-Aug-4HL-2FC_model.png')
 
 i=1000 #samples_per_epoch
 j=800 #nb_val_samples
 
 folder  = "Weights/Best/main/"
 ensure_dir(folder)
-filepath= folder + "3-4HL-2FC_weights.best.hdf5"
+filepath= folder + "1-16HL-2FC_weights.best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
@@ -179,7 +199,7 @@ print 'fitting model'
 history = model.fit_generator(
 	train_generator,
 	samples_per_epoch=i,
-	nb_epoch=16,
+	nb_epoch=100,
 	validation_data=validation_generator,
 	nb_val_samples=j,
 	verbose = 2,
@@ -209,7 +229,7 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "3-4HL-2FC_accuracy_val.png"
+fileName = "1-16HL-2FC_accuracy_val.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
 plt.close(fig)
 
@@ -221,13 +241,13 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='lower right')
-fileName = "3-4HL-2FC_loss.png"
+fileName = "1-16HL-2FC_loss.png"
 plt.savefig(folder + fileName, bbox_inches='tight')
 plt.close(fig)
 
 folder  = "Files/"
 ensure_dir(folder)
-with open(folder +"3-Output_4HL-2FC.txt", "wb") as text_file:
-	text_file.write("Batch 30 Using Opt=Nadam, lr =  %.8f, decay =  %.8f, reg =  %.8f\n  Validation Error: %.2f%%, Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" %(learn_r,dec,reg,100-vscores[1]*100,100-tscores[1]*100,j,i))
+with open(folder +"1-Output_16HL-2FC.txt", "wb") as text_file:
+	text_file.write("Using Opt=Nadam,batch =15, (224,224) lr =  %.8f, decay =  %.8f, reg =  %.8f\n  Validation Error: %.2f%%, Test Error: %.2f%%, for nb_val_samples=%d samples_per_epoch=%d" %(learn_r,dec,reg,100-vscores[1]*100,100-tscores[1]*100,j,i))
 
 
