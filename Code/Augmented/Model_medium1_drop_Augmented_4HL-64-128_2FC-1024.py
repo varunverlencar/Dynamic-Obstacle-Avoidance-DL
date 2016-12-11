@@ -269,7 +269,7 @@ validation_generator = validation_datagen.flow_from_directory(
     '../../Dataset/validation',
     target_size=(160, 90),
     batch_size=10,
-    shuffle=False,
+    shuffle=True,
     class_mode='categorical')
 
 print "validation data read"
@@ -288,7 +288,7 @@ class_nb_images = test_generator.nb_sample
 print "test data read, classes: "
 
 
-samples_per_epoch=200 #samples_per_epoch
+samples_per_epoch=2000 #samples_per_epoch
 nb_val_samples=800 #nb_val_samples
 nb_test_samples = 2855
 
@@ -300,11 +300,11 @@ y_test[2790:2855] = 3   #stop
 
 Y_test = np_utils.to_categorical(y_test,4)
 
-learn_r= 0.0000025
+learn_r= 0.00025
 dec = 0.0000001
 reg = 0.000001
-nb_epoch = 20
-file_prefix = '2-drop0.3_b10_Aug_lr0.0000025_dec0.0000001_reg0.000001_-4HL-32-64-2FC-128'
+nb_epoch = 50
+file_prefix = '1-drop0.3_b10_Aug_lr0.00025_dec0.0000001_reg0.000001_-4HL-64-128-2FC-1024'
 
 # define a simple CNN model
 def baseline_model():
@@ -312,21 +312,21 @@ def baseline_model():
     model = Sequential()
     model.add(ZeroPadding2D((1,1),input_shape=(3,160,90)))     #0
 
-    model.add(Convolution2D(32, 3, 3, activation='relu', name='conv1_1', W_regularizer = l2(reg)))
+    model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_1', W_regularizer = l2(reg)))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(32, 3, 3, activation='relu', name='conv1_2'))
+    model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_2'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(64, 3, 3, activation='relu', name='conv2_1'))
+    model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_1'))
     model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(64, 3, 3, activation='relu', name='conv2_2'))
+    model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_2'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(1024, activation='relu'))
     model.add(Dropout(0.3))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(1024, activation='relu'))
     model.add(Dropout(0.3))
     model.add(Dense(4, activation='softmax'))
 
@@ -411,7 +411,7 @@ print '\nOutPredict:',out_pred
 target_names = ['Forward','Left','Right','Stop']
 
 # Plot normalized confusion matrix
-folder  = "Results/Plots/"
+folder  = "Results/Plots/ConfusionMatrix/"
 cm = confusion_matrix(np.argmax(Y_test,axis=1), np.argmax(out_pred,axis=1))
 
 cnf_matrix = plt.figure()
@@ -421,7 +421,7 @@ plt.close(cnf_matrix)
 
 
 #Plot classification report
-folder = 'Results/Plots/Classification Report'
+folder = 'Results/Plots/ClassificationReport/'
 report = classification_report(np.argmax(Y_test,axis=1), np.argmax(out_pred,axis=1),target_names=target_names)
 
 plot_classification_report(report)

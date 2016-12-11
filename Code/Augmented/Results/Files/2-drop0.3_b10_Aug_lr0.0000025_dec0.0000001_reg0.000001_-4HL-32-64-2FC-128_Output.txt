@@ -1,0 +1,2 @@
+Using Opt=Nadam,batch = 10, (160x90) lr =  0.00000002, decay =  0.00000010, reg =  0.00001000
+  Validation Error: 67.12%, Test Error: 0.00%, for nb_val_samples=800 samples_per_epoch=200
