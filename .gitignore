@@ -90,6 +90,10 @@ ENV/
 
 #folders
 *.zip
+*.rar
+*.xls
+*.xlsx
+
 Dataset/
 dataset_proj/
 Code/Files

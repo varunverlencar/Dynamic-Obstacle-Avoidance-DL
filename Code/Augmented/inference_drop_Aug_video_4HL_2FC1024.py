@@ -14,9 +14,9 @@ def output_label(out):
     if out == 0:
         return 'Forward'
     elif out == 1:
-        return 'Right'
-    elif out == 2:
         return 'Left'
+    elif out == 2:
+        return 'Right'
     elif out == 3:
         return 'Stop'
     else:

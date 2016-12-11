@@ -11,6 +11,8 @@ K.set_learning_phase(0)
 from keras.regularizers import l2
 from keras.optimizers import Nadam
 import cv2, numpy as np
+from sklearn.metrics import confusion_matrix,classification_report
+
 from os import listdir
 from os.path import isfile, join
 
@@ -55,16 +57,17 @@ def plot_layer_output(layer,img,x,y):
     output_img = np.rollaxis(np.rollaxis(output_img[0],2,1),3,1)
     print '4:',(output_img.shape)
     
-    fig = plt.figure(figsize = (32,18))
+    fig = plt.figure(figsize = (128,72))
     for i in range(len(layer.W.get_value())):
         ax = fig.add_subplot(x, y, i+1)
         img = output_img[0,:,:,i]
 
-        ax.imshow(img)
+        ax.imshow(img,cmap='gray', interpolation='nearest')
         plt.xticks(np.array([]))
         plt.yticks(np.array([]))
         plt.tight_layout()
     plt.show()
+    return fig
 
 def baseline_model(weights_path=None):
     # create model
@@ -96,13 +99,11 @@ def baseline_model(weights_path=None):
     return model
 
 if __name__ == "__main__":
-    #with open(the_filename, 'wb') as f:
-    #    pickle.dump(my_list, f)
-    # with open(the_filename, 'rb') as f:
-    #     my_list = pickle.load(f)
+    Y_test = ['Forward','Left','Right','Stop'] 
+
     testpath = '../testImages/'
     filenames = [f for f in listdir(testpath) if isfile(join(testpath, f))]
-    filenames = ['Right_bg2_obj4-100005.jpg']
+    filenames = ['Stop_bg2_obj300044.jpg']
 
     for file in filenames:
         print 'File name',file
@@ -146,6 +147,15 @@ if __name__ == "__main__":
         model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
         out = model.predict(im)
 
+        target_names = Y_test
+        cm = confusion_matrix([0,0,0,1], out)
+        plt.matshow(cm)
+        plt.title('Confusion matrix')
+        plt.colorbar()
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.show()
+
         print out
         print np.argmax(out)
         print output_label(np.argmax(out))
@@ -153,6 +163,15 @@ if __name__ == "__main__":
         f.write("drop fc =1024 Using Opt=Nadam,batch = 10, (160x90) lr =  %.8f, decay =  %.8f, reg =  %.8f\n  , for nb_val_samples=800 samples_per_epoch=1000" %(learn_r,dec,reg))
         
         #plot output form intermediate layers
-        plot_layer_output(model.layers[6],im,16,8)
+        # plt.close(cm)
+        # plot_layer_output(model.layers[1],im,8,8).savefig('Results/Inference/Visualisations/' + file.split('.')[0] + '_Conv_1.jpg', bbox_inches='tight')
+        # plt.close()
+        # plot_layer_output(model.layers[3],im,8,8).savefig('Results/Inference/Visualisations/' + file.split('.')[0] + '_Conv_2.jpg', bbox_inches='tight')
+        # plt.close()
+        # plot_layer_output(model.layers[6],im,16,8).savefig('Results/Inference/Visualisations/' + file.split('.')[0] + '_Conv_3.jpg', bbox_inches='tight')
+        # plt.close()
+        # plot_layer_output(model.layers[8],im,16,8).savefig('Results/Inference/Visualisations/' + file.split('.')[0] + '_Conv_4.jpg', bbox_inches='tight')
+        # plt.close()
+        
         # plot_weights
     f.close
